@@ -48,6 +48,7 @@ def download_youtube_video_as_mp3(video_url, output_path='downloads'):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
+        'cookiefile': 'path/to/your/cookies.txt',  # Specify the path to your cookies file
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
