@@ -10,7 +10,6 @@ def find_open_port(start_port=5000, end_port=65535):
     """Find an open port in the specified range."""
     for port in range(start_port, end_port + 1):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            # Bind to all interfaces (0.0.0.0) and check if the port is available
             if sock.connect_ex(('0.0.0.0', port)) != 0:  # Port is open
                 return port
     return None  # No open port found
@@ -21,10 +20,16 @@ def index():
 
 @app.route('/download', methods=['POST'])
 def download():
-    url = request.form['url']
+    url = request.form.get('url')  # Use get to avoid KeyError
+    if not url:
+        return "Error: No URL provided.", 400
+    
     try:
         yt = YouTube(url)
         video = yt.streams.filter(only_audio=True).first()
+        if not video:
+            return "Error: No audio streams available.", 400
+        
         out_file = video.download(output_path='downloads')
         
         # Convert to MP3
@@ -37,7 +42,7 @@ def download():
         
         return send_file(mp3_file, as_attachment=True)
     except Exception as e:
-        return str(e)
+        return f"Error: {str(e)}", 400
 
 if __name__ == '__main__':
     if not os.path.exists('downloads'):
