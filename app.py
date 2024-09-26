@@ -10,7 +10,8 @@ def find_open_port(start_port=5000, end_port=65535):
     """Find an open port in the specified range."""
     for port in range(start_port, end_port + 1):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            if sock.connect_ex(('127.0.0.1', port)) != 0:  # Port is open
+            # Bind to all interfaces (0.0.0.0) and check if the port is available
+            if sock.connect_ex(('0.0.0.0', port)) != 0:  # Port is open
                 return port
     return None  # No open port found
 
@@ -45,6 +46,6 @@ if __name__ == '__main__':
     open_port = find_open_port(5000, 65535)  # Scan for open ports starting from 5000
     if open_port:
         print(f"Starting Flask app on port {open_port}")
-        app.run(debug=True, port=open_port)  # Use the found open port
+        app.run(debug=True, host='0.0.0.0', port=open_port)  # Use the found open port
     else:
         print("No open ports found.")
