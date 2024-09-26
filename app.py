@@ -2,8 +2,17 @@ from flask import Flask, request, send_file, render_template
 from pytube import YouTube
 import os
 from pydub import AudioSegment
+import socket
 
 app = Flask(__name__)
+
+def find_open_port(start_port=5000, end_port=65535):
+    """Find an open port in the specified range."""
+    for port in range(start_port, end_port + 1):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            if sock.connect_ex(('127.0.0.1', port)) != 0:  # Port is open
+                return port
+    return None  # No open port found
 
 @app.route('/')
 def index():
@@ -32,4 +41,10 @@ def download():
 if __name__ == '__main__':
     if not os.path.exists('downloads'):
         os.makedirs('downloads')
-    app.run(debug=True, port=49152)  # Specify the port here
+    
+    open_port = find_open_port(5000, 65535)  # Scan for open ports starting from 5000
+    if open_port:
+        print(f"Starting Flask app on port {open_port}")
+        app.run(debug=True, port=open_port)  # Use the found open port
+    else:
+        print("No open ports found.")
